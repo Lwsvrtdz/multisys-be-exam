@@ -51,7 +51,7 @@ class UserController extends Controller
         return response()->json(
             [
             'access_token' => $token,
-            ]
+            ], 201
         );
     }
 
