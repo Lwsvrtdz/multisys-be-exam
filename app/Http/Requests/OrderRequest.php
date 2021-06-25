@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +29,19 @@ class OrderRequest extends FormRequest
     {
         return [
             'product_id' => 'required',
-            'quantity' => 'required'
+            'quantity' => 'required|numeric|min:1'
         ];
+    }
+
+    public function messages()
+    {
+        return [
+            'quantity.min' => 'Invalid Quantity Value',
+        ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json(['message' => $validator->errors()], 422));
     }
 }

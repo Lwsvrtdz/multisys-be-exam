@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -48,28 +49,32 @@ class OrderController extends Controller
                 ], 404
             );
         }
-        if ($product->available_stock >= $request->quantity) { //check quantity -> save then deduct
-            $user->orders()->create(
-                [
-                    'product_id' => $request->product_id,
-                    'quantity' => $request->quantity
-                ]
-            );
-            $product->available_stock = $product->available_stock - $request->quantity;
-            $product->save();
-            return response()->json(
-                [
-                    'message' => "You have successfully ordered this product."
-                ], 201
-            );
-        } else {
-            return response()->json(
-                [
-                    'message' => "Failed to order this product due to unavailability of the stock"
-                ], 400
-            );
+        try {
+            if ($product->available_stock >= $request->quantity) { //check quantity -> save then deduct
+                $user->orders()->create(
+                    [
+                        'product_id' => $request->product_id,
+                        'quantity' => $request->quantity
+                    ]
+                );
+                $product->available_stock = $product->available_stock - $request->quantity;
+                $product->save();
+                return response()->json(
+                    [
+                        'message' => "You have successfully ordered this product."
+                    ], 201
+                );
+            } else {
+                return response()->json(
+                    [
+                        'message' => "Failed to order this product due to unavailability of the stock"
+                    ], 400
+                );
+            }
         }
-
+        catch (Exception $e) {
+            return response()->json(['error' => $e], 500);
+        }
 
     }
 
